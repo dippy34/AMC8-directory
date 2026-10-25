@@ -65,9 +65,10 @@ button, select { font: inherit; color: inherit; }
 }
 .top-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 8px 7px; }
 .brand { position: relative; display: flex; align-items: baseline; gap: .2em; font-family: var(--display); font-weight: 700; font-size: 1.5rem; line-height: 1; }
-.year-btn { display: inline-flex; align-items: baseline; gap: 5px; padding: 3px 7px; border: 1.5px solid transparent; border-radius: 6px; background: none; color: var(--sheet); cursor: pointer; font: 600 1.5rem var(--display); }
+.year-btn { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1.5px solid transparent; border-radius: 6px; background: none; color: var(--sheet); cursor: pointer; font: 600 1.5rem/1 var(--display); }
 .year-btn:hover, .year-btn[aria-expanded="true"] { border-color: var(--line); background: var(--sheet-soft); }
-.caret { font-size: .55em; }
+.caret { flex: none; width: 14px; height: 14px; transition: transform .15s; }
+.year-btn[aria-expanded="true"] .caret { transform: rotate(180deg); }
 .status { margin-left: auto; display: flex; align-items: center; gap: 16px; font: 500 .82rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
 .status strong { color: var(--ink); font-weight: 600; }
 .bar { height: 4px; background: var(--line); }
@@ -77,9 +78,7 @@ button, select { font: inherit; color: inherit; }
 .confirm-in span { flex: 1 1 240px; }
 
 /* Year picker */
-.years { position: absolute; top: calc(100% + 10px); left: 0; z-index: 20; width: min(560px, calc(100vw - 32px)); max-height: min(70vh, 560px); overflow-y: auto; box-sizing: border-box; padding: 6px 16px 16px; background: var(--page); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 14px 36px var(--shadow); font: 400 1rem/1.3 var(--body); }
-.years h3 { margin: 12px 0 8px; color: var(--sheet); font: 700 .8rem var(--display); letter-spacing: .1em; text-transform: uppercase; }
-.years h3 small { margin-left: 6px; color: var(--muted); font-weight: 500; font-size: .95em; letter-spacing: 0; text-transform: none; }
+.years { position: absolute; top: calc(100% + 10px); left: 0; z-index: 20; width: min(560px, calc(100vw - 32px)); max-height: min(70vh, 560px); overflow-y: auto; box-sizing: border-box; padding: 14px; background: var(--page); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 14px 36px var(--shadow); font: 400 1rem/1.3 var(--body); }
 .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
 .year-opt { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 4px 6px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--page); color: var(--ink); cursor: pointer; font: 600 1rem var(--mono); }
 .year-opt small { min-height: 1.2em; color: var(--muted); font: 500 .68rem var(--mono); }
@@ -188,13 +187,11 @@ button, select { font: inherit; color: inherit; }
     <div class="brand">
       <span>AMC 8</span>
       <button class="year-btn" id="year-btn" aria-haspopup="true" aria-expanded="false" aria-controls="years" title="Pick a year">
-        <span id="year-label">2024</span><span class="caret" aria-hidden="true">▼</span>
+        <span id="year-label">2024</span>
+        <svg class="caret" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div class="years" id="years" hidden>
-        <h3>AMC 8</h3>
-        <div class="year-grid" id="grid-amc"></div>
-        <h3>AJHSME <small>what the AMC 8 was called before 1999</small></h3>
-        <div class="year-grid" id="grid-ajhsme"></div>
+        <div class="year-grid" id="year-grid"></div>
       </div>
     </div>
     <div class="status"><span id="status-text"></span><button class="link" id="restart-btn">Start over</button></div>
@@ -420,8 +417,7 @@ function renderPicker() {
       : s && s.answers.some(Boolean) ? "started" : "";
     return `<button class="year-opt" data-year="${y}"${y === year ? ' aria-current="true"' : ""}>${y}<small>${note}</small></button>`;
   };
-  $("#grid-amc").innerHTML = YEARS.filter(y => y >= 1999).map(opt).join("");
-  $("#grid-ajhsme").innerHTML = YEARS.filter(y => y < 1999).map(opt).join("");
+  $("#year-grid").innerHTML = YEARS.map(opt).join("");
 }
 function togglePicker(open) {
   const panel = $("#years");
