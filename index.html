@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AMC 8 Directory</title>
+<title>AMC Directory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
 <script src="vendor/katex/katex.min.js"></script>
+<script src="data/index.js"></script>
 <style>
 /* Layout: a single test-booklet page, one problem at a time, under a slim header with a year picker */
 :root {
@@ -64,11 +65,12 @@ button, select { font: inherit; color: inherit; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .top-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 8px 7px; }
-.brand { position: relative; display: flex; align-items: baseline; gap: .2em; font-family: var(--display); font-weight: 700; font-size: 1.5rem; line-height: 1; }
-.year-btn { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1.5px solid transparent; border-radius: 6px; background: none; color: var(--sheet); cursor: pointer; font: 600 1.5rem/1 var(--display); }
-.year-btn:hover, .year-btn[aria-expanded="true"] { border-color: var(--line); background: var(--sheet-soft); }
+.brand { position: relative; display: flex; align-items: center; gap: 2px; margin-left: -8px; }
+.pick-btn { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1.5px solid transparent; border-radius: 6px; background: none; color: var(--ink); cursor: pointer; font: 700 1.5rem/1 var(--display); white-space: nowrap; }
+.pick-btn:hover, .pick-btn[aria-expanded="true"] { border-color: var(--line); background: var(--sheet-soft); }
+.year-btn { color: var(--sheet); font-weight: 600; }
 .caret { flex: none; width: 14px; height: 14px; transition: transform .15s; }
-.year-btn[aria-expanded="true"] .caret { transform: rotate(180deg); }
+.pick-btn[aria-expanded="true"] .caret { transform: rotate(180deg); }
 .status { margin-left: auto; display: flex; align-items: center; gap: 16px; font: 500 .82rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
 .status strong { color: var(--ink); font-weight: 600; }
 .bar { height: 4px; background: var(--line); }
@@ -77,10 +79,17 @@ button, select { font: inherit; color: inherit; }
 .confirm-in { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding-block: 10px; font-size: 1.05rem; }
 .confirm-in span { flex: 1 1 240px; }
 
-/* Year picker */
-.years { position: absolute; top: calc(100% + 10px); left: 0; z-index: 20; width: min(560px, calc(100vw - 32px)); max-height: min(70vh, 560px); overflow-y: auto; box-sizing: border-box; padding: 14px; background: var(--page); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 14px 36px var(--shadow); font: 400 1rem/1.3 var(--body); }
-.year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
-.year-opt { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 4px 6px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--page); color: var(--ink); cursor: pointer; font: 600 1rem var(--mono); }
+/* Competition and test pickers */
+.menu { position: absolute; top: calc(100% + 10px); left: 8px; z-index: 20; max-height: min(70vh, 560px); overflow-y: auto; box-sizing: border-box; padding: 14px; background: var(--page); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 14px 36px var(--shadow); font: 400 1rem/1.3 var(--body); }
+.comps { width: min(260px, calc(100vw - 32px)); padding: 6px; display: grid; gap: 2px; }
+.comp-opt { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 0; border-radius: 6px; background: none; color: var(--ink); cursor: pointer; font: 700 1.2rem var(--display); text-align: left; }
+.comp-opt small { color: var(--muted); font: 500 .75rem var(--mono); }
+.comp-opt:hover { background: var(--sheet-soft); }
+.comp-opt[aria-current="true"] { background: var(--sheet); color: var(--page); }
+.comp-opt[aria-current="true"] small { color: var(--page); }
+.years { width: min(580px, calc(100vw - 32px)); }
+.year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px; }
+.year-opt { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 7px 4px 6px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--page); color: var(--ink); cursor: pointer; font: 600 .95rem var(--mono); text-align: center; }
 .year-opt small { min-height: 1.2em; color: var(--muted); font: 500 .68rem var(--mono); }
 .year-opt:hover { border-color: var(--sheet); }
 .year-opt[aria-current="true"] { background: var(--sheet); border-color: var(--sheet); color: var(--page); }
@@ -192,12 +201,16 @@ button, select { font: inherit; color: inherit; }
 <header class="top">
   <div class="top-in">
     <div class="brand">
-      <span>AMC 8</span>
-      <button class="year-btn" id="year-btn" aria-haspopup="true" aria-expanded="false" aria-controls="years" title="Pick a year">
+      <button class="pick-btn" id="comp-btn" aria-haspopup="true" aria-expanded="false" aria-controls="comps" title="Pick a competition">
+        <span id="comp-label">AMC 8</span>
+        <svg class="caret" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="pick-btn year-btn" id="year-btn" aria-haspopup="true" aria-expanded="false" aria-controls="years" title="Pick a test">
         <span id="year-label">2024</span>
         <svg class="caret" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <div class="years" id="years" hidden>
+      <div class="menu comps" id="comps" hidden></div>
+      <div class="menu years" id="years" hidden>
         <div class="year-grid" id="year-grid"></div>
       </div>
     </div>
@@ -219,48 +232,65 @@ button, select { font: inherit; color: inherit; }
 
 <footer class="foot">
   Problems and answer choices are from the MAA's <a href="https://maa.org/student-programs/amc/">American Mathematics Competitions</a>, © Mathematical Association of America.
-  Problems, answers and solutions for every year except 2024 come from <a href="https://wiki.randommath.com/amc8">Random Math Wiki</a>.
+  Problems, answers and solutions come from <a href="https://wiki.randommath.com">Random Math Wiki</a>, except the 2024 AMC 8, which was typed up from the official test booklet.
 </footer>
 
 <script>
-// Every year Random Math Wiki has problems for. There was no AMC 8 in 2021,
-// and the wiki hasn't posted 2025 yet.
-const YEARS = [2026, 2024, 2023, 2022, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010,
-  2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000, 1999,
-  1998, 1997, 1996, 1995, 1994, 1993, 1992, 1991, 1990, 1989, 1988, 1987, 1986, 1985];
-const DEFAULT_YEAR = 2024;
+// AMC_TESTS (data/index.js) lists every test the site has, newest first.
+const COMPS = {
+  amc8: { name: "AMC 8", right: 1, blank: 0, rule: "1 point for each correct answer, 0 for wrong or skipped" },
+  amc10: { name: "AMC 10", right: 6, blank: 1.5, rule: "6 points for each correct answer, 1.5 for each skipped one, 0 for wrong" },
+  amc12: { name: "AMC 12", right: 6, blank: 1.5, rule: "6 points for each correct answer, 1.5 for each skipped one, 0 for wrong" },
+};
+const DEFAULT = { comp: "amc8", id: "2024" };
 const LETTERS = ["A", "B", "C", "D", "E"];
 
-// Each years/<year>.js file calls AMC8.add({ year, problems }) when it loads.
+// Each data/<comp>/<id>.js file calls AMC.add({ comp, id, label, problems }) when it loads.
 const data = {};
-window.AMC8 = { add(d) { data[d.year] = d; } };
+window.AMC = { add(d) { data[`${d.comp}/${d.id}`] = d; } };
 
 const $ = s => document.querySelector(s);
-const stateKey = y => `amc8-${y}-quiz-v2`;
-let year = null;
+// "amc8-2024-quiz-v2" is the same key the AMC 8-only site used, so earlier progress carries over.
+const stateKey = (c, id) => `${c}-${id}-quiz-v2`;
+let comp = null;
+let test = null;
 let S = null;
 let confirming = false;
 
-const P = () => data[year].problems;
+const tests = c => AMC_TESTS[c] || [];
+const findTest = (c, id) => tests(c).find(t => t.id === id) || null;
+const rules = () => COMPS[comp];
+const title = () => `${rules().name} ${test.label}`;
+const P = () => data[`${comp}/${test.id}`].problems;
 const count = () => P().length;
 const fresh = () => ({ answers: Array(count()).fill(null), cur: 0, done: false, view: "problem" });
-function loadState(y, n) {
+function loadState(c, id, n) {
   try {
-    const s = JSON.parse(localStorage.getItem(stateKey(y)));
+    const s = JSON.parse(localStorage.getItem(stateKey(c, id)));
     if (s && Array.isArray(s.answers) && (n === undefined || s.answers.length === n)) return s;
   } catch (e) {}
   return null;
 }
 function save() {
   try {
-    localStorage.setItem(stateKey(year), JSON.stringify(S));
-    localStorage.setItem("amc8-last-year", String(year));
+    localStorage.setItem(stateKey(comp, test.id), JSON.stringify(S));
+    localStorage.setItem("amc-last-comp", comp);
+    localStorage.setItem(`amc-last-${comp}`, test.id);
   } catch (e) {}
+}
+// The test to open when switching to a competition: the last one used there, else the newest.
+function lastTestFor(c) {
+  let id = null;
+  try { id = localStorage.getItem(`amc-last-${c}`) || (c === "amc8" ? localStorage.getItem("amc8-last-year") : null); } catch (e) {}
+  if (findTest(c, id)) return id;
+  return c === DEFAULT.comp ? DEFAULT.id : tests(c)[0].id;
 }
 
 const answered = () => S.answers.filter(Boolean).length;
 const correct = () => S.answers.filter((a, i) => a === P()[i].a).length;
 const unanswered = () => S.answers.flatMap((a, i) => a ? [] : [i]);
+const points = () => correct() * rules().right + (count() - answered()) * rules().blank;
+const fmtPoints = x => Number.isInteger(x) ? String(x) : x.toFixed(1);
 // Results-table text for a choice; picture choices show just the letter.
 const choiceText = (i, L) => {
   const html = P()[i].c[LETTERS.indexOf(L)];
@@ -272,36 +302,41 @@ function nextOpen(from) {
   return open.find(i => i > from) ?? open[0] ?? null;
 }
 
-function loadYear(y) {
-  if (data[y]) return Promise.resolve();
+function loadTest(c, id) {
+  if (data[`${c}/${id}`]) return Promise.resolve();
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = `years/${y}.js`;
-    script.onload = () => data[y] ? resolve() : reject();
+    script.src = `data/${c}/${id}.js`;
+    script.onload = () => data[`${c}/${id}`] ? resolve() : reject();
     script.onerror = reject;
     document.head.appendChild(script);
   });
 }
 
-async function openYear(y) {
-  year = y;
+async function openTest(c, id) {
+  const t = findTest(c, id) || tests(c)[0];
+  comp = c;
+  test = t;
   S = null;
   confirming = false;
-  togglePicker(false);
-  $("#year-label").textContent = y;
-  if (location.hash !== `#${y}`) history.replaceState(null, "", `#${y}`);
-  $("#booklet").innerHTML = `<p class="loading">Loading the ${y} problems…</p>`;
+  setMenu(null);
+  $("#comp-label").textContent = COMPS[c].name;
+  $("#year-label").textContent = t.label;
+  document.title = `${title()} · AMC Directory`;
+  const hash = `#${c}-${t.id}`;
+  if (location.hash !== hash) history.replaceState(null, "", hash);
+  $("#booklet").innerHTML = `<p class="loading">Loading the ${title()} problems…</p>`;
   $("#status-text").textContent = "";
   $("#restart-btn").hidden = true;
   $("#bar").style.width = "0";
   try {
-    await loadYear(y);
+    await loadTest(c, t.id);
   } catch (e) {
-    if (year === y) $("#booklet").innerHTML = `<p class="loading">Couldn't load the ${y} problems. Make sure the years folder is next to this page, then reload.</p>`;
+    if (test === t) $("#booklet").innerHTML = `<p class="loading">Couldn't load the ${title()} problems. Make sure the data folder is next to this page, then reload.</p>`;
     return;
   }
-  if (year !== y) return;
-  S = loadState(y, count()) || fresh();
+  if (test !== t) return;
+  S = loadState(c, t.id, count()) || fresh();
   render();
   window.scrollTo({ top: 0 });
 }
@@ -318,14 +353,14 @@ function renderMath(root) {
 function render() {
   const n = answered();
   $("#status-text").innerHTML = S.done
-    ? `Final score <strong>${correct()} / ${count()}</strong>`
+    ? `Final score <strong>${fmtPoints(points())} / ${fmtPoints(count() * rules().right)}</strong>`
     : `Problem <strong>${S.cur + 1}</strong> of ${count()} · <strong>${correct()}</strong> correct`;
   $("#bar").style.width = `${(n / count()) * 100}%`;
   $("#restart-btn").hidden = n === 0;
   $("#confirm").hidden = !confirming;
   if (confirming) $("#confirm-msg").textContent = S.done
-    ? `Start the ${year} quiz over from Problem 1?`
-    : `Start the ${year} quiz over from Problem 1? This erases your ${n} answer${n === 1 ? "" : "s"}.`;
+    ? `Start the ${title()} over from Problem 1?`
+    : `Start the ${title()} over from Problem 1? This erases your ${n} answer${n === 1 ? "" : "s"}.`;
   const booklet = $("#booklet");
   booklet.innerHTML = S.view === "results" ? resultsHTML() : problemHTML(S.cur);
   renderMath(booklet);
@@ -349,12 +384,12 @@ function problemHTML(i) {
   if (reveal) {
     const ok = mine === p.a;
     const right = choiceText(i, p.a);
-    const title = ok ? "✓ Correct" : mine ? `✗ Not quite. The answer is ${right}.` : `Skipped. The answer is ${right}.`;
+    const heading = ok ? "✓ Correct" : mine ? `✗ Not quite. The answer is ${right}.` : `Skipped. The answer is ${right}.`;
     const solution = p.why || p.s;
     const body = solution
       ? `<div class="fb-why"><div class="fb-label">Solution</div>${solution}</div>`
       : p.sol ? `<div class="fb-sol"><a href="${p.sol}" target="_blank" rel="noopener">See the solution on Random Math Wiki ↗</a></div>` : "";
-    fb = `<div class="feedback${ok ? "" : mine ? " bad" : " skip"}"><div class="fb-title">${title}</div>${body}</div>`;
+    fb = `<div class="feedback${ok ? "" : mine ? " bad" : " skip"}"><div class="fb-title">${heading}</div>${body}</div>`;
   }
   const fig = p.fig ? `<figure class="fig"><div class="fig-card"><img src="${p.fig.src}" width="${p.fig.w}" alt="Figure for problem ${i + 1}"></div></figure>` : "";
   const next = nextOpen(i);
@@ -368,7 +403,8 @@ function problemHTML(i) {
     nav = `<span class="hint">Press Enter for your score</span><span class="end"><button class="btn primary" id="next-btn" data-finish>See your score</button></span>`;
   } else if (graded && next < i) {
     const left = unanswered().length;
-    nav = `<p class="skip-note">You skipped ${left} problem${left === 1 ? "" : "s"}. Skipped problems count as 0.</p>
+    const worth = rules().blank ? `Skipped problems get ${fmtPoints(rules().blank)} points each, like a blank on the real test.` : "Skipped problems count as 0.";
+    nav = `<p class="skip-note">You skipped ${left} problem${left === 1 ? "" : "s"}. ${worth}</p>
       <span class="end"><button class="btn" data-finish>Finish now</button>
       <button class="btn primary" id="next-btn" data-go="${next}">Back to Problem ${next + 1} →</button></span>`;
   } else if (graded) {
@@ -399,9 +435,9 @@ function resultsHTML() {
     return `<tr><td><button class="link" data-review="${i}">Problem ${i + 1}</button></td><td>${mine ? choiceText(i, mine) : "—"}</td><td>${choiceText(i, p.a)}</td><td>${chip}</td></tr>`;
   }).join("");
   return `<div class="results">
-    <p class="eyebrow">Your ${year} score</p>
-    <div class="score"><span>${right}</span><span class="of">/ ${count()}</span></div>
-    <p class="score-note">Scored like the real AMC 8: 1 point for each correct answer, 0 for wrong or skipped.</p>
+    <p class="eyebrow">Your ${title()} score</p>
+    <div class="score"><span>${fmtPoints(points())}</span><span class="of">/ ${fmtPoints(count() * rules().right)}</span></div>
+    <p class="score-note">Scored like the real ${rules().name}: ${rules().rule}.</p>
     <div class="tallies">
       <span class="tally good">${right} correct</span>
       <span class="tally bad">${wrong} wrong</span>
@@ -409,8 +445,8 @@ function resultsHTML() {
     </div>
     <div class="actions">
       <button class="btn primary" data-review="0">Review the problems</button>
-      <button class="btn" data-again>Take the ${year} quiz again</button>
-      <button class="btn" data-pick>Try another year</button>
+      <button class="btn" data-again>Take the ${title()} again</button>
+      <button class="btn" data-pick>Try another test</button>
     </div>
     <h2>Problem by problem</h2>
     <div class="table-wrap"><table class="rt">
@@ -420,22 +456,35 @@ function resultsHTML() {
   </div>`;
 }
 
-// Year picker: every year, with your score on the ones you've finished.
-function renderPicker() {
-  const opt = y => {
-    const s = loadState(y);
-    const note = s && s.done && typeof s.score === "number" ? `${s.score}/${s.answers.length}`
-      : s && s.answers.some(Boolean) ? "started" : "";
-    return `<button class="year-opt" data-year="${y}"${y === year ? ' aria-current="true"' : ""}>${y}<small>${note}</small></button>`;
-  };
-  $("#year-grid").innerHTML = YEARS.map(opt).join("");
+// Competition menu: AMC 8, AMC 10, AMC 12.
+function renderComps() {
+  $("#comps").innerHTML = Object.entries(COMPS).filter(([c]) => tests(c).length).map(([c, info]) =>
+    `<button class="comp-opt" data-comp="${c}"${c === comp ? ' aria-current="true"' : ""}><span>${info.name}</span><small>${tests(c).length} tests</small></button>`).join("");
 }
-function togglePicker(open) {
-  const panel = $("#years");
-  if (open) renderPicker();
-  panel.hidden = !open;
-  $("#year-btn").setAttribute("aria-expanded", String(open));
-  if (open) (panel.querySelector('[aria-current="true"]') || panel.querySelector(".year-opt")).focus();
+// Test picker: every test in this competition, with your score on the ones you've finished.
+function renderPicker() {
+  const opt = t => {
+    const s = loadState(comp, t.id);
+    const note = s && s.done && typeof s.score === "number"
+      ? (rules().right === 1 ? `${s.score}/${s.answers.length}` : `${fmtPoints(s.score)} pts`)
+      : s && s.answers.some(Boolean) ? "started" : "";
+    return `<button class="year-opt" data-test="${t.id}"${t.id === test.id ? ' aria-current="true"' : ""}>${t.label}<small>${note}</small></button>`;
+  };
+  $("#year-grid").innerHTML = tests(comp).map(opt).join("");
+}
+const MENUS = { comps: ["#comp-btn", renderComps], years: ["#year-btn", renderPicker] };
+const openMenu = () => Object.keys(MENUS).find(m => !$(`#${m}`).hidden) || null;
+function setMenu(which) {
+  for (const [m, [btn, fill]] of Object.entries(MENUS)) {
+    const open = m === which;
+    if (open) fill();
+    $(`#${m}`).hidden = !open;
+    $(btn).setAttribute("aria-expanded", String(open));
+  }
+  if (which) {
+    const panel = $(`#${which}`);
+    (panel.querySelector('[aria-current="true"]') || panel.querySelector("button")).focus();
+  }
 }
 
 function goTo(i) {
@@ -446,7 +495,7 @@ function goTo(i) {
 }
 function finish() {
   S.done = true;
-  S.score = correct();
+  S.score = points();
   S.view = "results";
   render();
   window.scrollTo({ top: 0 });
@@ -474,12 +523,14 @@ function startOver() {
 document.addEventListener("click", e => {
   const t = e.target.closest("button");
   if (!t) {
-    if (!$("#years").hidden && !e.target.closest("#years")) togglePicker(false);
+    if (openMenu() && !e.target.closest(".menu")) setMenu(null);
     return;
   }
-  if (t.id === "year-btn") { togglePicker($("#years").hidden); return; }
-  if (t.dataset.year) { openYear(+t.dataset.year); return; }
-  if (!$("#years").hidden && !t.closest("#years")) togglePicker(false);
+  if (t.id === "comp-btn") { setMenu(openMenu() === "comps" ? null : "comps"); return; }
+  if (t.id === "year-btn") { setMenu(openMenu() === "years" ? null : "years"); return; }
+  if (t.dataset.comp) { if (t.dataset.comp === comp) setMenu(null); else openTest(t.dataset.comp, lastTestFor(t.dataset.comp)); return; }
+  if (t.dataset.test) { openTest(comp, t.dataset.test); return; }
+  if (openMenu() && !t.closest(".menu")) setMenu(null);
   if (!S) return;
   if (t.id === "restart-btn") { confirming = true; render(); return; }
   if (t.id === "confirm-yes") { startOver(); return; }
@@ -490,7 +541,7 @@ document.addEventListener("click", e => {
   if (t.dataset.review !== undefined) { goTo(+t.dataset.review); return; }
   if (t.hasAttribute("data-results")) { S.view = "results"; render(); window.scrollTo({ top: 0 }); return; }
   if (t.hasAttribute("data-again")) { startOver(); return; }
-  if (t.hasAttribute("data-pick")) { window.scrollTo({ top: 0 }); togglePicker(true); return; }
+  if (t.hasAttribute("data-pick")) { window.scrollTo({ top: 0 }); setMenu("years"); return; }
 });
 
 document.addEventListener("change", e => {
@@ -498,30 +549,37 @@ document.addEventListener("change", e => {
 });
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && !$("#years").hidden) { togglePicker(false); $("#year-btn").focus(); return; }
+  const menu = openMenu();
+  if (e.key === "Escape" && menu) { setMenu(null); $(MENUS[menu][0]).focus(); return; }
   if (!S || e.metaKey || e.ctrlKey || e.altKey || S.view !== "problem" || S.done) return;
-  if (e.target.tagName === "SELECT" || !$("#years").hidden) return;
+  if (e.target.tagName === "SELECT" || menu) return;
   const k = e.key.toUpperCase();
   const idx = k.length === 1 ? (LETTERS.indexOf(k) >= 0 ? LETTERS.indexOf(k) : "12345".indexOf(k)) : -1;
   if (idx >= 0 && !S.answers[S.cur]) { e.preventDefault(); choose(LETTERS[idx]); }
   else if (e.key === "Enter" && S.answers[S.cur] && e.target.id !== "next-btn") { e.preventDefault(); next(); }
 });
 
-function yearFromHash() {
-  const y = +location.hash.slice(1);
-  return YEARS.includes(y) ? y : null;
+// "#amc10-2023A", or "#2019" from links made before AMC 10 and 12 were added.
+function fromHash() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  const m = h.match(/^(amc8|amc10|amc12)-(.+)$/);
+  if (m && findTest(m[1], m[2])) return { comp: m[1], id: m[2] };
+  if (findTest("amc8", h)) return { comp: "amc8", id: h };
+  return null;
 }
 window.addEventListener("hashchange", () => {
-  const y = yearFromHash();
-  if (y && y !== year) openYear(y);
+  const t = fromHash();
+  if (t && (t.comp !== comp || t.id !== test?.id)) openTest(t.comp, t.id);
 });
 
-let startYear = yearFromHash();
-if (!startYear) {
-  try { startYear = +localStorage.getItem("amc8-last-year"); } catch (e) {}
-  if (!YEARS.includes(startYear)) startYear = DEFAULT_YEAR;
+let start = fromHash();
+if (!start) {
+  let c = null;
+  try { c = localStorage.getItem("amc-last-comp"); } catch (e) {}
+  if (!COMPS[c] || !tests(c).length) c = DEFAULT.comp;
+  start = { comp: c, id: lastTestFor(c) };
 }
-openYear(startYear);
+openTest(start.comp, start.id);
 </script>
 </body>
 </html>

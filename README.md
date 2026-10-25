@@ -1,16 +1,24 @@
-# AMC 8 Directory
+# AMC Directory
 
-Take any past AMC 8, from 1985 to 2026, as a quiz and see how you'd score. (There was no AMC 8 in 2021, and 2025 isn't included yet because Random Math Wiki hasn't posted it.)
+Take any past AMC 8, AMC 10 or AMC 12 as a quiz and see how you'd score.
 
-Open `index.html`, then click the year next to "AMC 8" to pick a different year. Years before 1999 are the AJHSME, which is what the AMC 8 was called back then.
+Open `index.html`. Click the competition name in the header to switch between AMC 8, AMC 10 and AMC 12, and click the test next to it to pick a year (and the A or B test, for AMC 10 and 12).
+
+| Competition | Tests |
+| --- | --- |
+| AMC 8 | 1985–2026, except 2021 (no contest) and 2025 (not posted yet). Years before 1999 are the AJHSME, the AMC 8's old name. |
+| AMC 10 | 2000–2025, A and B tests from 2002, plus the 2021 Fall A test. Missing: 2020, 2021 Fall B and 2021 Spring B. |
+| AMC 12 | 2000–2025, A and B tests from 2002. Missing: 2019, 2020 and both 2021 Fall tests. |
+
+The missing tests aren't on Random Math Wiki yet.
 
 Each quiz has all 25 problems, with figures, as multiple choice (A–E) like the real test.
 
 - You answer one problem at a time, and each answer is graded right away.
-- **Skip to** jumps to any problem, and **Skip →** moves on without answering. Skipped problems count as 0.
+- **Skip to** jumps to any problem, and **Skip →** moves on without answering.
 - After you answer, the worked solution appears right below the problem.
-- At the end you get your score out of 25 and can review every problem.
-- Your progress is saved in your browser separately for each year.
+- At the end you get your score, scored like the real test: 1 point per correct answer on the AMC 8 (out of 25), and on the AMC 10 and 12, 6 points per correct answer and 1.5 per skipped problem (out of 150).
+- Your progress is saved in your browser separately for each test.
 
 ## Running it
 
@@ -20,15 +28,16 @@ Open `index.html` in a browser, or serve the folder locally:
 python3 -m http.server 4280
 ```
 
-Then go to http://localhost:4280. To open a specific year, add it to the address, for example http://localhost:4280/#2019.
+Then go to http://localhost:4280. To open a specific test, add it to the address, for example http://localhost:4280/#amc10-2023A or http://localhost:4280/#amc8-2019.
 
 ## Files
 
 - `index.html`: the quiz.
-- `years/<year>.js`: the problems, answer choices, answers and solutions for each year.
-- `images/<year>/`: the figures and solution diagrams.
+- `data/index.js`: the list of every test.
+- `data/<competition>/<test>.js`: the problems, answer choices, answers and solutions for one test.
+- `images/<competition>/<test>/`: the figures and solution diagrams.
 - `vendor/katex/`: [KaTeX](https://katex.org) (MIT license), which draws the math.
 
 ## Credits
 
-Problems are from the MAA's [American Mathematics Competitions](https://maa.org/student-programs/amc/), © Mathematical Association of America. The problems, answers and solutions for every year except 2024 come from [Random Math Wiki](https://wiki.randommath.com/amc8). The 2024 problems were typed up from the official test booklet, with explanations written for this site.
+Problems are from the MAA's [American Mathematics Competitions](https://maa.org/student-programs/amc/), © Mathematical Association of America. Problems, answers and solutions come from [Random Math Wiki](https://wiki.randommath.com), except the 2024 AMC 8, which was typed up from the official test booklet with explanations written for this site. Where the wiki's solution doesn't state a clear answer, the answer was worked out by hand from the solution.
