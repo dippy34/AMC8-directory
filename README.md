@@ -8,7 +8,7 @@ Each quiz has all 25 problems, with figures, as multiple choice (A–E) like the
 
 - You answer one problem at a time, and each answer is graded right away.
 - **Skip to** jumps to any problem, and **Skip →** moves on without answering. Skipped problems count as 0.
-- Every problem links to a full solution. 2024 also has short explanations built in.
+- After you answer, the worked solution appears right below the problem.
 - At the end you get your score out of 25 and can review every problem.
 - Your progress is saved in your browser separately for each year.
 
@@ -25,10 +25,10 @@ Then go to http://localhost:4280. To open a specific year, add it to the address
 ## Files
 
 - `index.html`: the quiz.
-- `years/<year>.js`: the problems, answer choices and answers for each year.
-- `images/<year>/`: the figures.
+- `years/<year>.js`: the problems, answer choices, answers and solutions for each year.
+- `images/<year>/`: the figures and solution diagrams.
 - `vendor/katex/`: [KaTeX](https://katex.org) (MIT license), which draws the math.
 
 ## Credits
 
-Problems are from the MAA's [American Mathematics Competitions](https://maa.org/student-programs/amc/), © Mathematical Association of America. The problems and answers for every year except 2024 come from [Random Math Wiki](https://wiki.randommath.com/amc8). The 2024 problems were typed up from the official test booklet.
+Problems are from the MAA's [American Mathematics Competitions](https://maa.org/student-programs/amc/), © Mathematical Association of America. The problems, answers and solutions for every year except 2024 come from [Random Math Wiki](https://wiki.randommath.com/amc8). The 2024 problems were typed up from the official test booklet, with explanations written for this site.

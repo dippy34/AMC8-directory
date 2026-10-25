@@ -100,7 +100,7 @@ button, select { font: inherit; color: inherit; }
 .p-text { font-size: 1.2rem; line-height: 1.6; max-width: 64ch; overflow-wrap: anywhere; }
 .p-text p { margin: 0 0 .7em; }
 .p-text p:last-child { margin-bottom: 0; }
-.p-text img, .choice img { height: auto; background: var(--fig-bg); border: 1px solid var(--fig-border); border-radius: 6px; padding: 6px; box-sizing: border-box; }
+.p-text img, .choice img, .fb-why img { height: auto; background: var(--fig-bg); border: 1px solid var(--fig-border); border-radius: 6px; padding: 6px; box-sizing: border-box; }
 .p-text table { border-collapse: collapse; margin: .6em auto; }
 .p-text td, .p-text th { border: 1px solid var(--line); padding: 4px 10px; }
 .display { text-align: center; font-size: 1.25rem; margin: .5em 0 .8em; }
@@ -136,10 +136,17 @@ button, select { font: inherit; color: inherit; }
 /* Feedback */
 .feedback { margin-top: 22px; padding: 14px 18px; border: 1.5px solid var(--right); border-radius: 8px; background: var(--right-soft); display: grid; gap: 6px; }
 .feedback.bad { border-color: var(--wrong); background: var(--wrong-soft); }
+.feedback.skip { border-color: var(--line); background: var(--paper); }
 .fb-title { font: 700 1.2rem var(--display); color: var(--right); }
 .feedback.bad .fb-title { color: var(--wrong); }
-.fb-why { font-size: 1.07rem; line-height: 1.55; max-width: 66ch; }
-.fb-why b { font-family: var(--display); letter-spacing: .03em; text-transform: uppercase; font-size: .8rem; color: var(--muted); margin-right: .4em; }
+.feedback.skip .fb-title { color: var(--ink); }
+.fb-why { margin-top: 6px; font-size: 1.07rem; line-height: 1.55; max-width: 66ch; overflow-wrap: anywhere; }
+.fb-why p { margin: .5em 0; }
+.fb-why p:last-child { margin-bottom: 0; }
+.fb-why img { margin: .4em 0; }
+.fb-why table { border-collapse: collapse; margin: .6em auto; }
+.fb-why td, .fb-why th { border: 1px solid var(--line); padding: 4px 10px; }
+.fb-label { margin-bottom: 2px; color: var(--muted); font: 600 .8rem var(--display); letter-spacing: .08em; text-transform: uppercase; }
 .fb-sol { font: 600 .95rem var(--display); letter-spacing: .02em; }
 .fb-sol a { color: var(--sheet); text-underline-offset: 3px; }
 
@@ -212,7 +219,7 @@ button, select { font: inherit; color: inherit; }
 
 <footer class="foot">
   Problems and answer choices are from the MAA's <a href="https://maa.org/student-programs/amc/">American Mathematics Competitions</a>, © Mathematical Association of America.
-  Problems for every year except 2024 come from <a href="https://wiki.randommath.com/amc8">Random Math Wiki</a>, which also has full solutions.
+  Problems, answers and solutions for every year except 2024 come from <a href="https://wiki.randommath.com/amc8">Random Math Wiki</a>.
 </footer>
 
 <script>
@@ -327,23 +334,27 @@ function render() {
 
 function problemHTML(i) {
   const p = P()[i], mine = S.answers[i], graded = mine !== null;
+  const reveal = graded || S.done;
   const choices = p.c.map((v, k) => {
     const L = LETTERS[k];
     let cls = "choice";
     if (/<img/i.test(v)) cls += " has-img";
     if (mine === L) cls += " picked";
-    if (graded && L === p.a) cls += " is-right";
-    else if (graded && mine === L) cls += " is-wrong";
+    if (reveal && L === p.a) cls += " is-right";
+    else if (reveal && mine === L) cls += " is-wrong";
     return `<button class="${cls}" data-choice="${L}" aria-pressed="${mine === L}"${graded ? ' aria-disabled="true"' : ""}><span class="bubble">${L}</span><span class="val">${v}</span></button>`;
   }).join("");
+  // After answering, or when reviewing a finished quiz (skipped problems included).
   let fb = "";
-  if (graded) {
+  if (reveal) {
     const ok = mine === p.a;
     const right = choiceText(i, p.a);
-    const title = ok ? "✓ Correct" : `✗ Not quite. The answer is ${right}.`;
-    const why = p.why ? `<div class="fb-why"><b>How to get it</b>${p.why}</div>` : "";
-    const sol = p.sol ? `<div class="fb-sol"><a href="${p.sol}" target="_blank" rel="noopener">${p.why ? "More solutions" : "See how to solve it"} on Random Math Wiki ↗</a></div>` : "";
-    fb = `<div class="feedback${ok ? "" : " bad"}"><div class="fb-title">${title}</div>${why}${sol}</div>`;
+    const title = ok ? "✓ Correct" : mine ? `✗ Not quite. The answer is ${right}.` : `Skipped. The answer is ${right}.`;
+    const solution = p.why || p.s;
+    const body = solution
+      ? `<div class="fb-why"><div class="fb-label">Solution</div>${solution}</div>`
+      : p.sol ? `<div class="fb-sol"><a href="${p.sol}" target="_blank" rel="noopener">See the solution on Random Math Wiki ↗</a></div>` : "";
+    fb = `<div class="feedback${ok ? "" : mine ? " bad" : " skip"}"><div class="fb-title">${title}</div>${body}</div>`;
   }
   const fig = p.fig ? `<figure class="fig"><div class="fig-card"><img src="${p.fig.src}" width="${p.fig.w}" alt="Figure for problem ${i + 1}"></div></figure>` : "";
   const next = nextOpen(i);
