@@ -80,6 +80,9 @@ button { font: inherit; color: inherit; }
 .p-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 14px; font-family: var(--display); }
 .p-num { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
 .p-of { color: var(--muted); font-weight: 500; font-size: 1.05rem; }
+.jump { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font: 600 .82rem var(--display); letter-spacing: .08em; text-transform: uppercase; }
+.jump select { padding: 5px 8px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--page); color: var(--ink); cursor: pointer; font: 500 .9rem var(--mono); letter-spacing: 0; text-transform: none; }
+.jump select:hover { border-color: var(--sheet); }
 .p-text { font-size: 1.2rem; line-height: 1.6; max-width: 64ch; }
 .p-text p { margin: 0 0 .7em; }
 .p-text p:last-child { margin-bottom: 0; }
@@ -123,7 +126,8 @@ button { font: inherit; color: inherit; }
 .btn:disabled { opacity: .4; cursor: default; }
 .link { border: 0; background: none; padding: 0; color: var(--sheet); cursor: pointer; font: 600 .95rem var(--display); letter-spacing: .02em; text-decoration: underline; text-underline-offset: 3px; }
 .p-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 28px; padding-top: 18px; border-top: 1px dashed var(--line); }
-.p-nav .end { margin-left: auto; display: flex; gap: 10px; }
+.p-nav .end { margin-left: auto; display: flex; flex-wrap: wrap; gap: 10px; }
+.skip-note { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 1.02rem; }
 .hint { color: var(--muted); font: .78rem var(--mono); }
 @media (hover: none) { .hint { display: none; } }
 
@@ -277,6 +281,24 @@ let confirming = false;
 const answered = () => S.answers.filter(Boolean).length;
 const correct = () => S.answers.filter((a, i) => a === KEY[i]).length;
 const choiceText = (i, L) => `(${L}) ${P[i].c[LETTERS.indexOf(L)]}`;
+const unanswered = () => S.answers.flatMap((a, i) => a ? [] : [i]);
+// The next problem still to answer after `from`, wrapping back to earlier skipped ones.
+function nextOpen(from) {
+  const open = unanswered().filter(i => i !== from);
+  return open.find(i => i > from) ?? open[0] ?? null;
+}
+function goTo(i) {
+  S.cur = i;
+  S.view = "problem";
+  render();
+  window.scrollTo({ top: 0 });
+}
+function finish() {
+  S.done = true;
+  S.view = "results";
+  render();
+  window.scrollTo({ top: 0 });
+}
 
 function render() {
   const n = answered();
@@ -310,18 +332,31 @@ function problemHTML(i) {
     fb = `<div class="feedback${ok ? "" : " bad"}"><div class="fb-title">${title}</div><div class="fb-why"><b>How to get it</b>${p.why}</div></div>`;
   }
   const fig = p.fig ? `<figure class="fig"><div class="fig-card"><img src="${p.fig.src}" width="${p.fig.w}" alt="Figure for problem ${i + 1}"></div></figure>` : "";
+  const next = nextOpen(i);
   let nav;
   if (S.done) {
     nav = `<button class="link" data-results>Back to score</button><span class="end">
       <button class="btn" data-review="${i - 1}"${i === 0 ? " disabled" : ""}>← Previous</button>
       ${i < 24 ? `<button class="btn primary" data-review="${i + 1}">Next →</button>` : `<button class="btn primary" data-results>Back to score</button>`}</span>`;
+  } else if (graded && next === null) {
+    nav = `<span class="hint">Press Enter for your score</span><span class="end"><button class="btn primary" id="next-btn" data-finish>See your score</button></span>`;
+  } else if (graded && next < i) {
+    const left = unanswered().length;
+    nav = `<p class="skip-note">You skipped ${left} problem${left === 1 ? "" : "s"}. Skipped problems count as 0.</p>
+      <span class="end"><button class="btn" data-finish>Finish now</button>
+      <button class="btn primary" id="next-btn" data-go="${next}">Back to Problem ${next + 1} →</button></span>`;
   } else if (graded) {
-    nav = `<span class="hint">Press Enter for the next problem</span><span class="end"><button class="btn primary" id="next-btn" data-next>${i < 24 ? "Next problem →" : "See your score"}</button></span>`;
+    nav = `<span class="hint">Press Enter for the next problem</span><span class="end"><button class="btn primary" id="next-btn" data-go="${next}">${next === i + 1 ? "Next problem →" : `Next: Problem ${next + 1} →`}</button></span>`;
   } else {
-    nav = `<span class="hint">Pick an answer, or press A–E</span>`;
+    nav = `<span class="hint">Pick an answer, or press A–E</span>${next === null ? "" : `<span class="end"><button class="btn" data-go="${next}">Skip →</button></span>`}`;
   }
+  const options = P.map((_, k) => {
+    const note = S.done ? (S.answers[k] ? "" : " (skipped)") : (S.answers[k] ? " (answered)" : "");
+    return `<option value="${k}"${k === i ? " selected" : ""}>Problem ${k + 1}${note}</option>`;
+  }).join("");
   return `<article>
-    <div class="p-head"><span class="p-num">Problem ${i + 1}</span><span class="p-of">of 25</span></div>
+    <div class="p-head"><span class="p-num">Problem ${i + 1}</span><span class="p-of">of 25</span>
+      <label class="jump">Skip to <select id="jump">${options}</select></label></div>
     <div class="p-text">${p.q}</div>
     ${fig}
     <div class="choices" role="group" aria-label="Answer choices">${choices}</div>
@@ -331,19 +366,20 @@ function problemHTML(i) {
 }
 
 function resultsHTML() {
-  const right = correct(), wrong = 25 - right;
+  const right = correct(), skippedCount = 25 - answered(), wrong = answered() - right;
   const rows = P.map((p, i) => {
     const mine = S.answers[i];
-    const chip = mine === p.a ? `<span class="chip good">Correct</span>` : `<span class="chip bad">Wrong</span>`;
+    const chip = !mine ? `<span class="chip">Skipped</span>` : mine === p.a ? `<span class="chip good">Correct</span>` : `<span class="chip bad">Wrong</span>`;
     return `<tr><td><button class="link" data-review="${i}">Problem ${i + 1}</button></td><td>${mine ? choiceText(i, mine) : "—"}</td><td>${choiceText(i, p.a)}</td><td>${chip}</td></tr>`;
   }).join("");
   return `<div class="results">
     <p class="eyebrow">Your score</p>
     <div class="score"><span>${right}</span><span class="of">/ 25</span></div>
-    <p class="score-note">Scored like the real AMC 8: 1 point for each correct answer.</p>
+    <p class="score-note">Scored like the real AMC 8: 1 point for each correct answer, 0 for wrong or skipped.</p>
     <div class="tallies">
       <span class="tally good">${right} correct</span>
       <span class="tally bad">${wrong} wrong</span>
+      ${skippedCount ? `<span class="tally">${skippedCount} skipped</span>` : ""}
     </div>
     <div class="actions">
       <button class="btn primary" data-review="0">Review the problems</button>
@@ -367,10 +403,9 @@ function choose(L) {
 
 function next() {
   if (S.done || !S.answers[S.cur]) return;
-  if (S.cur < 24) S.cur += 1;
-  else { S.done = true; S.view = "results"; }
-  render();
-  window.scrollTo({ top: 0 });
+  const target = nextOpen(S.cur);
+  if (target === null) finish();
+  else goTo(target);
 }
 
 function startOver() {
@@ -387,14 +422,19 @@ document.addEventListener("click", e => {
   if (t.id === "confirm-yes") { startOver(); return; }
   if (t.id === "confirm-no") { confirming = false; render(); return; }
   if (t.dataset.choice) { if (t.getAttribute("aria-disabled") !== "true") choose(t.dataset.choice); return; }
-  if (t.hasAttribute("data-next")) { next(); return; }
-  if (t.dataset.review !== undefined) { S.cur = +t.dataset.review; S.view = "problem"; render(); window.scrollTo({ top: 0 }); return; }
+  if (t.dataset.go !== undefined) { goTo(+t.dataset.go); return; }
+  if (t.hasAttribute("data-finish")) { finish(); return; }
+  if (t.dataset.review !== undefined) { goTo(+t.dataset.review); return; }
   if (t.hasAttribute("data-results")) { S.view = "results"; render(); window.scrollTo({ top: 0 }); return; }
   if (t.hasAttribute("data-again")) { startOver(); return; }
 });
 
+document.addEventListener("change", e => {
+  if (e.target.id === "jump") goTo(+e.target.value);
+});
+
 document.addEventListener("keydown", e => {
-  if (e.metaKey || e.ctrlKey || e.altKey || S.view !== "problem" || S.done) return;
+  if (e.metaKey || e.ctrlKey || e.altKey || S.view !== "problem" || S.done || e.target.tagName === "SELECT") return;
   const k = e.key.toUpperCase();
   const idx = k.length === 1 ? (LETTERS.indexOf(k) >= 0 ? LETTERS.indexOf(k) : "12345".indexOf(k)) : -1;
   if (idx >= 0 && !S.answers[S.cur]) { e.preventDefault(); choose(LETTERS[idx]); }
