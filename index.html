@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AMC 8 Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<style>
+/* Layout: a single test-booklet page, one problem at a time, under a slim header with a year picker */
+:root {
+  --paper: #f3f7f4;
+  --page: #ffffff;
+  --ink: #1c2220;
+  --muted: #5b6862;
+  --line: #d2dfd7;
+  --sheet: #2b7553;
+  --sheet-soft: #e5f0ea;
+  --right: #157a45;
+  --right-soft: #e1f3e8;
+  --wrong: #c03a29;
+  --wrong-soft: #fbe8e5;
+  --fig-bg: #ffffff;
+  --fig-border: transparent;
+  --shadow: rgba(28, 34, 32, .16);
+  --display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "STIX Two Text", "Times New Roman", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1412; --page: #151d1a; --ink: #e3eae6; --muted: #96a59e; --line: #2a3832;
+    --sheet: #6ecb9d; --sheet-soft: #182621;
+    --right: #56d18f; --right-soft: #15301f; --wrong: #ff8b76; --wrong-soft: #3a1c17;
+    --fig-bg: #ffffff; --fig-border: #3b4b44; --shadow: rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1412; --page: #151d1a; --ink: #e3eae6; --muted: #96a59e; --line: #2a3832;
+  --sheet: #6ecb9d; --sheet-soft: #182621;
+  --right: #56d18f; --right-soft: #15301f; --wrong: #ff8b76; --wrong-soft: #3a1c17;
+  --fig-bg: #ffffff; --fig-border: #3b4b44; --shadow: rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+
+body { margin: 0; background: var(--paper); color: var(--ink); font: 14px var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--page); }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+button, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sheet); outline-offset: 2px; }
+
+/* Header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--page); border-bottom: 1px solid var(--line); }
+.top-in, .wrap, .confirm-in, .foot {
+  max-width: 820px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.top-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 8px 7px; }
+.brand { position: relative; display: flex; align-items: baseline; gap: .2em; font-family: var(--display); font-weight: 700; font-size: 1.5rem; line-height: 1; }
+.year-btn { display: inline-flex; align-items: baseline; gap: 5px; padding: 3px 7px; border: 1.5px solid transparent; border-radius: 6px; background: none; color: var(--sheet); cursor: pointer; font: 600 1.5rem var(--display); }
+.year-btn:hover, .year-btn[aria-expanded="true"] { border-color: var(--line); background: var(--sheet-soft); }
+.caret { font-size: .55em; }
+.status { margin-left: auto; display: flex; align-items: center; gap: 16px; font: 500 .82rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.status strong { color: var(--ink); font-weight: 600; }
+.bar { height: 4px; background: var(--line); }
+.bar span { display: block; height: 100%; background: var(--sheet); transition: width .3s; }
+.confirm { border-top: 1px solid var(--line); background: var(--sheet-soft); }
+.confirm-in { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding-block: 10px; font-size: 1.05rem; }
+.confirm-in span { flex: 1 1 240px; }
+
+/* Year picker */
+.years { position: absolute; top: calc(100% + 10px); left: 0; z-index: 20; width: min(560px, calc(100vw - 32px)); max-height: min(70vh, 560px); overflow-y: auto; box-sizing: border-box; padding: 6px 16px 16px; background: var(--page); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 14px 36px var(--shadow); font: 400 1rem/1.3 var(--body); }
+.years h3 { margin: 12px 0 8px; color: var(--sheet); font: 700 .8rem var(--display); letter-spacing: .1em; text-transform: uppercase; }
+.years h3 small { margin-left: 6px; color: var(--muted); font-weight: 500; font-size: .95em; letter-spacing: 0; text-transform: none; }
+.year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.year-opt { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 4px 6px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--page); color: var(--ink); cursor: pointer; font: 600 1rem var(--mono); }
+.year-opt small { min-height: 1.2em; color: var(--muted); font: 500 .68rem var(--mono); }
+.year-opt:hover { border-color: var(--sheet); }
+.year-opt[aria-current="true"] { background: var(--sheet); border-color: var(--sheet); color: var(--page); }
+.year-opt[aria-current="true"] small { color: var(--page); }
+
+.wrap { padding-block: 24px 28px; }
+
+/* Booklet page */
+.booklet { background: var(--page); border: 1px solid var(--line); border-radius: 4px; padding: clamp(18px, 4vw, 40px); }
+.loading { margin: 0; color: var(--muted); font-size: 1.1rem; }
+.p-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 14px; font-family: var(--display); }
+.p-num { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+.p-of { color: var(--muted); font-weight: 500; font-size: 1.05rem; }
+.jump { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font: 600 .82rem var(--display); letter-spacing: .08em; text-transform: uppercase; }
+.jump select { padding: 5px 8px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--page); color: var(--ink); cursor: pointer; font: 500 .9rem var(--mono); letter-spacing: 0; text-transform: none; }
+.jump select:hover { border-color: var(--sheet); }
+.p-text { font-size: 1.2rem; line-height: 1.6; max-width: 64ch; overflow-wrap: anywhere; }
+.p-text p { margin: 0 0 .7em; }
+.p-text p:last-child { margin-bottom: 0; }
+.p-text img, .choice img { height: auto; background: var(--fig-bg); border: 1px solid var(--fig-border); border-radius: 6px; padding: 6px; box-sizing: border-box; }
+.p-text table { border-collapse: collapse; margin: .6em auto; }
+.p-text td, .p-text th { border: 1px solid var(--line); padding: 4px 10px; }
+.display { text-align: center; font-size: 1.25rem; margin: .5em 0 .8em; }
+.bullets { margin: .2em 0 .8em; padding-left: 1.3em; }
+.fig { margin: 20px 0 4px; display: flex; justify-content: center; }
+.fig-card { min-width: 0; max-width: 100%; background: var(--fig-bg); border: 1px solid var(--fig-border); border-radius: 6px; padding: 10px; }
+.fig img { display: block; max-width: 100%; height: auto; }
+.katex { font-size: 1.08em; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+
+/* Hand-set math in the 2024 problems */
+.frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: .92em; line-height: 1.15; margin: 0 .12em; }
+.frac > span { padding: 0 .15em; }
+.frac > span:last-child { border-top: 1px solid currentColor; padding-top: 1px; }
+.sqrt > span { border-top: 1px solid currentColor; padding-left: .05em; }
+.dg i { text-decoration: underline; text-underline-offset: 3px; margin: 0 .09em; }
+
+/* Answer choices */
+.choices { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.choice { display: inline-flex; align-items: center; gap: 10px; min-height: 50px; max-width: 100%; padding: 8px 18px 8px 9px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--page); color: var(--ink); cursor: pointer; font: 1.15rem var(--body); text-align: left; transition: border-color .15s, background-color .15s; }
+.choice.has-img { border-radius: 14px; }
+.choice img { max-height: 160px; width: auto; }
+.choice .val { min-width: 0; overflow-wrap: anywhere; }
+.choice:hover:not([aria-disabled="true"]) { border-color: var(--sheet); }
+.choice[aria-disabled="true"] { cursor: default; }
+.bubble { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--sheet); color: var(--sheet); font: 600 .8rem var(--mono); transition: background-color .15s; }
+.choice.is-right { border-color: var(--right); background: var(--right-soft); }
+.choice.is-right .bubble { border-color: var(--right); color: var(--right); }
+.choice.is-right.picked .bubble { background: var(--right); color: var(--page); }
+.choice.is-wrong { border-color: var(--wrong); background: var(--wrong-soft); }
+.choice.is-wrong .bubble { background: var(--wrong); border-color: var(--wrong); color: var(--page); }
+
+/* Feedback */
+.feedback { margin-top: 22px; padding: 14px 18px; border: 1.5px solid var(--right); border-radius: 8px; background: var(--right-soft); display: grid; gap: 6px; }
+.feedback.bad { border-color: var(--wrong); background: var(--wrong-soft); }
+.fb-title { font: 700 1.2rem var(--display); color: var(--right); }
+.feedback.bad .fb-title { color: var(--wrong); }
+.fb-why { font-size: 1.07rem; line-height: 1.55; max-width: 66ch; }
+.fb-why b { font-family: var(--display); letter-spacing: .03em; text-transform: uppercase; font-size: .8rem; color: var(--muted); margin-right: .4em; }
+.fb-sol { font: 600 .95rem var(--display); letter-spacing: .02em; }
+.fb-sol a { color: var(--sheet); text-underline-offset: 3px; }
+
+/* Buttons */
+.btn { padding: 10px 18px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--page); color: var(--ink); cursor: pointer; font: 600 1rem var(--display); letter-spacing: .02em; }
+.btn:hover:not(:disabled) { border-color: var(--sheet); }
+.btn.primary { background: var(--sheet); border-color: var(--sheet); color: var(--page); }
+.btn:disabled { opacity: .4; cursor: default; }
+.link { border: 0; background: none; padding: 0; color: var(--sheet); cursor: pointer; font: 600 .95rem var(--display); letter-spacing: .02em; text-decoration: underline; text-underline-offset: 3px; }
+.p-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 28px; padding-top: 18px; border-top: 1px dashed var(--line); }
+.p-nav .end { margin-left: auto; display: flex; flex-wrap: wrap; gap: 10px; }
+.skip-note { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 1.02rem; }
+.hint { color: var(--muted); font: .78rem var(--mono); }
+@media (hover: none) { .hint { display: none; } }
+
+/* Results */
+.eyebrow { margin: 0 0 6px; color: var(--sheet); font: 700 .85rem var(--display); letter-spacing: .1em; text-transform: uppercase; }
+.score { display: flex; align-items: baseline; gap: .15em; font-family: var(--display); font-weight: 700; font-size: clamp(3.6rem, 11vw, 5.6rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.score .of { font-size: .42em; color: var(--muted); font-weight: 600; }
+.score-note { margin: 8px 0 16px; color: var(--muted); font-size: 1.02rem; }
+.tallies { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.tally { padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; font: 500 .82rem var(--mono); font-variant-numeric: tabular-nums; }
+.tally.good { color: var(--right); border-color: var(--right); }
+.tally.bad { color: var(--wrong); border-color: var(--wrong); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.results h2 { margin: 32px 0 10px; font: 700 1.3rem var(--display); }
+.table-wrap { overflow-x: auto; }
+.rt { width: 100%; border-collapse: collapse; font-size: 1.02rem; }
+.rt th { text-align: left; padding: 6px 10px; color: var(--muted); font: 600 .78rem var(--display); letter-spacing: .08em; text-transform: uppercase; border-bottom: 1.5px solid var(--line); }
+.rt td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+.chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font: 600 .8rem var(--display); letter-spacing: .04em; border: 1px solid var(--line); color: var(--muted); }
+.chip.good { color: var(--right); border-color: var(--right); background: var(--right-soft); }
+.chip.bad { color: var(--wrong); border-color: var(--wrong); background: var(--wrong-soft); }
+
+.foot { padding-block: 0 40px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.foot a { color: inherit; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span>AMC 8</span>
+      <button class="year-btn" id="year-btn" aria-haspopup="true" aria-expanded="false" aria-controls="years" title="Pick a year">
+        <span id="year-label">2024</span><span class="caret" aria-hidden="true">▼</span>
+      </button>
+      <div class="years" id="years" hidden>
+        <h3>AMC 8</h3>
+        <div class="year-grid" id="grid-amc"></div>
+        <h3>AJHSME <small>what the AMC 8 was called before 1999</small></h3>
+        <div class="year-grid" id="grid-ajhsme"></div>
+      </div>
+    </div>
+    <div class="status"><span id="status-text"></span><button class="link" id="restart-btn">Start over</button></div>
+  </div>
+  <div class="bar" aria-hidden="true"><span id="bar"></span></div>
+  <div id="confirm" class="confirm" hidden>
+    <div class="confirm-in">
+      <span id="confirm-msg"></span>
+      <button id="confirm-yes" class="btn primary">Start over</button>
+      <button id="confirm-no" class="btn">Cancel</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="booklet" id="booklet"><p class="loading">Loading…</p></section>
+</main>
+
+<footer class="foot">
+  Problems and answer choices are from the MAA's <a href="https://maa.org/student-programs/amc/">American Mathematics Competitions</a>, © Mathematical Association of America.
+  Problems for every year except 2024 come from <a href="https://wiki.randommath.com/amc8">Random Math Wiki</a>, which also has full solutions.
+</footer>
+
+<script>
+// Every year Random Math Wiki has problems for. There was no AMC 8 in 2021,
+// and the wiki hasn't posted 2025 yet.
+const YEARS = [2026, 2024, 2023, 2022, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010,
+  2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000, 1999,
+  1998, 1997, 1996, 1995, 1994, 1993, 1992, 1991, 1990, 1989, 1988, 1987, 1986, 1985];
+const DEFAULT_YEAR = 2024;
+const LETTERS = ["A", "B", "C", "D", "E"];
+
+// Each years/<year>.js file calls AMC8.add({ year, problems }) when it loads.
+const data = {};
+window.AMC8 = { add(d) { data[d.year] = d; } };
+
+const $ = s => document.querySelector(s);
+const stateKey = y => `amc8-${y}-quiz-v2`;
+let year = null;
+let S = null;
+let confirming = false;
+
+const P = () => data[year].problems;
+const count = () => P().length;
+const fresh = () => ({ answers: Array(count()).fill(null), cur: 0, done: false, view: "problem" });
+function loadState(y, n) {
+  try {
+    const s = JSON.parse(localStorage.getItem(stateKey(y)));
+    if (s && Array.isArray(s.answers) && (n === undefined || s.answers.length === n)) return s;
+  } catch (e) {}
+  return null;
+}
+function save() {
+  try {
+    localStorage.setItem(stateKey(year), JSON.stringify(S));
+    localStorage.setItem("amc8-last-year", String(year));
+  } catch (e) {}
+}
+
+const answered = () => S.answers.filter(Boolean).length;
+const correct = () => S.answers.filter((a, i) => a === P()[i].a).length;
+const unanswered = () => S.answers.flatMap((a, i) => a ? [] : [i]);
+// Results-table text for a choice; picture choices show just the letter.
+const choiceText = (i, L) => {
+  const html = P()[i].c[LETTERS.indexOf(L)];
+  return /<img/i.test(html) ? `(${L})` : `(${L}) ${html}`;
+};
+// The next problem still to answer after `from`, wrapping back to earlier skipped ones.
+function nextOpen(from) {
+  const open = unanswered().filter(i => i !== from);
+  return open.find(i => i > from) ?? open[0] ?? null;
+}
+
+function loadYear(y) {
+  if (data[y]) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `years/${y}.js`;
+    script.onload = () => data[y] ? resolve() : reject();
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+async function openYear(y) {
+  year = y;
+  S = null;
+  confirming = false;
+  togglePicker(false);
+  $("#year-label").textContent = y;
+  if (location.hash !== `#${y}`) history.replaceState(null, "", `#${y}`);
+  $("#booklet").innerHTML = `<p class="loading">Loading the ${y} problems…</p>`;
+  $("#status-text").textContent = "";
+  $("#restart-btn").hidden = true;
+  $("#bar").style.width = "0";
+  try {
+    await loadYear(y);
+  } catch (e) {
+    if (year === y) $("#booklet").innerHTML = `<p class="loading">Couldn't load the ${y} problems. Make sure the years folder is next to this page, then reload.</p>`;
+    return;
+  }
+  if (year !== y) return;
+  S = loadState(y, count()) || fresh();
+  render();
+  window.scrollTo({ top: 0 });
+}
+
+function renderMath(root) {
+  if (!window.katex) return;
+  for (const el of root.querySelectorAll(".tex")) {
+    try {
+      katex.render(el.textContent, el, { throwOnError: false, displayMode: el.hasAttribute("data-display") });
+    } catch (e) {}
+  }
+}
+
+function render() {
+  const n = answered();
+  $("#status-text").innerHTML = S.done
+    ? `Final score <strong>${correct()} / ${count()}</strong>`
+    : `Problem <strong>${S.cur + 1}</strong> of ${count()} · <strong>${correct()}</strong> correct`;
+  $("#bar").style.width = `${(n / count()) * 100}%`;
+  $("#restart-btn").hidden = n === 0;
+  $("#confirm").hidden = !confirming;
+  if (confirming) $("#confirm-msg").textContent = S.done
+    ? `Start the ${year} quiz over from Problem 1?`
+    : `Start the ${year} quiz over from Problem 1? This erases your ${n} answer${n === 1 ? "" : "s"}.`;
+  const booklet = $("#booklet");
+  booklet.innerHTML = S.view === "results" ? resultsHTML() : problemHTML(S.cur);
+  renderMath(booklet);
+  save();
+}
+
+function problemHTML(i) {
+  const p = P()[i], mine = S.answers[i], graded = mine !== null;
+  const choices = p.c.map((v, k) => {
+    const L = LETTERS[k];
+    let cls = "choice";
+    if (/<img/i.test(v)) cls += " has-img";
+    if (mine === L) cls += " picked";
+    if (graded && L === p.a) cls += " is-right";
+    else if (graded && mine === L) cls += " is-wrong";
+    return `<button class="${cls}" data-choice="${L}" aria-pressed="${mine === L}"${graded ? ' aria-disabled="true"' : ""}><span class="bubble">${L}</span><span class="val">${v}</span></button>`;
+  }).join("");
+  let fb = "";
+  if (graded) {
+    const ok = mine === p.a;
+    const right = choiceText(i, p.a);
+    const title = ok ? "✓ Correct" : `✗ Not quite. The answer is ${right}.`;
+    const why = p.why ? `<div class="fb-why"><b>How to get it</b>${p.why}</div>` : "";
+    const sol = p.sol ? `<div class="fb-sol"><a href="${p.sol}" target="_blank" rel="noopener">${p.why ? "More solutions" : "See how to solve it"} on Random Math Wiki ↗</a></div>` : "";
+    fb = `<div class="feedback${ok ? "" : " bad"}"><div class="fb-title">${title}</div>${why}${sol}</div>`;
+  }
+  const fig = p.fig ? `<figure class="fig"><div class="fig-card"><img src="${p.fig.src}" width="${p.fig.w}" alt="Figure for problem ${i + 1}"></div></figure>` : "";
+  const next = nextOpen(i);
+  const last = count() - 1;
+  let nav;
+  if (S.done) {
+    nav = `<button class="link" data-results>Back to score</button><span class="end">
+      <button class="btn" data-review="${i - 1}"${i === 0 ? " disabled" : ""}>← Previous</button>
+      ${i < last ? `<button class="btn primary" data-review="${i + 1}">Next →</button>` : `<button class="btn primary" data-results>Back to score</button>`}</span>`;
+  } else if (graded && next === null) {
+    nav = `<span class="hint">Press Enter for your score</span><span class="end"><button class="btn primary" id="next-btn" data-finish>See your score</button></span>`;
+  } else if (graded && next < i) {
+    const left = unanswered().length;
+    nav = `<p class="skip-note">You skipped ${left} problem${left === 1 ? "" : "s"}. Skipped problems count as 0.</p>
+      <span class="end"><button class="btn" data-finish>Finish now</button>
+      <button class="btn primary" id="next-btn" data-go="${next}">Back to Problem ${next + 1} →</button></span>`;
+  } else if (graded) {
+    nav = `<span class="hint">Press Enter for the next problem</span><span class="end"><button class="btn primary" id="next-btn" data-go="${next}">${next === i + 1 ? "Next problem →" : `Next: Problem ${next + 1} →`}</button></span>`;
+  } else {
+    nav = `<span class="hint">Pick an answer, or press A–E</span>${next === null ? "" : `<span class="end"><button class="btn" data-go="${next}">Skip →</button></span>`}`;
+  }
+  const options = P().map((_, k) => {
+    const note = S.done ? (S.answers[k] ? "" : " (skipped)") : (S.answers[k] ? " (answered)" : "");
+    return `<option value="${k}"${k === i ? " selected" : ""}>Problem ${k + 1}${note}</option>`;
+  }).join("");
+  return `<article>
+    <div class="p-head"><span class="p-num">Problem ${i + 1}</span><span class="p-of">of ${count()}</span>
+      <label class="jump">Skip to <select id="jump">${options}</select></label></div>
+    <div class="p-text">${p.q}</div>
+    ${fig}
+    <div class="choices" role="group" aria-label="Answer choices">${choices}</div>
+    <div aria-live="polite">${fb}</div>
+    <nav class="p-nav">${nav}</nav>
+  </article>`;
+}
+
+function resultsHTML() {
+  const right = correct(), skippedCount = count() - answered(), wrong = answered() - right;
+  const rows = P().map((p, i) => {
+    const mine = S.answers[i];
+    const chip = !mine ? `<span class="chip">Skipped</span>` : mine === p.a ? `<span class="chip good">Correct</span>` : `<span class="chip bad">Wrong</span>`;
+    return `<tr><td><button class="link" data-review="${i}">Problem ${i + 1}</button></td><td>${mine ? choiceText(i, mine) : "—"}</td><td>${choiceText(i, p.a)}</td><td>${chip}</td></tr>`;
+  }).join("");
+  return `<div class="results">
+    <p class="eyebrow">Your ${year} score</p>
+    <div class="score"><span>${right}</span><span class="of">/ ${count()}</span></div>
+    <p class="score-note">Scored like the real AMC 8: 1 point for each correct answer, 0 for wrong or skipped.</p>
+    <div class="tallies">
+      <span class="tally good">${right} correct</span>
+      <span class="tally bad">${wrong} wrong</span>
+      ${skippedCount ? `<span class="tally">${skippedCount} skipped</span>` : ""}
+    </div>
+    <div class="actions">
+      <button class="btn primary" data-review="0">Review the problems</button>
+      <button class="btn" data-again>Take the ${year} quiz again</button>
+      <button class="btn" data-pick>Try another year</button>
+    </div>
+    <h2>Problem by problem</h2>
+    <div class="table-wrap"><table class="rt">
+      <thead><tr><th>Problem</th><th>Your answer</th><th>Correct answer</th><th>Result</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
+}
+
+// Year picker: every year, with your score on the ones you've finished.
+function renderPicker() {
+  const opt = y => {
+    const s = loadState(y);
+    const note = s && s.done && typeof s.score === "number" ? `${s.score}/${s.answers.length}`
+      : s && s.answers.some(Boolean) ? "started" : "";
+    return `<button class="year-opt" data-year="${y}"${y === year ? ' aria-current="true"' : ""}>${y}<small>${note}</small></button>`;
+  };
+  $("#grid-amc").innerHTML = YEARS.filter(y => y >= 1999).map(opt).join("");
+  $("#grid-ajhsme").innerHTML = YEARS.filter(y => y < 1999).map(opt).join("");
+}
+function togglePicker(open) {
+  const panel = $("#years");
+  if (open) renderPicker();
+  panel.hidden = !open;
+  $("#year-btn").setAttribute("aria-expanded", String(open));
+  if (open) (panel.querySelector('[aria-current="true"]') || panel.querySelector(".year-opt")).focus();
+}
+
+function goTo(i) {
+  S.cur = i;
+  S.view = "problem";
+  render();
+  window.scrollTo({ top: 0 });
+}
+function finish() {
+  S.done = true;
+  S.score = correct();
+  S.view = "results";
+  render();
+  window.scrollTo({ top: 0 });
+}
+function choose(L) {
+  if (!S || S.view !== "problem" || S.done || S.answers[S.cur]) return;
+  S.answers[S.cur] = L;
+  render();
+  const nb = $("#next-btn");
+  if (nb) nb.focus({ preventScroll: true });
+}
+function next() {
+  if (!S || S.done || !S.answers[S.cur]) return;
+  const target = nextOpen(S.cur);
+  if (target === null) finish();
+  else goTo(target);
+}
+function startOver() {
+  S = fresh();
+  confirming = false;
+  render();
+  window.scrollTo({ top: 0 });
+}
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("button");
+  if (!t) {
+    if (!$("#years").hidden && !e.target.closest("#years")) togglePicker(false);
+    return;
+  }
+  if (t.id === "year-btn") { togglePicker($("#years").hidden); return; }
+  if (t.dataset.year) { openYear(+t.dataset.year); return; }
+  if (!$("#years").hidden && !t.closest("#years")) togglePicker(false);
+  if (!S) return;
+  if (t.id === "restart-btn") { confirming = true; render(); return; }
+  if (t.id === "confirm-yes") { startOver(); return; }
+  if (t.id === "confirm-no") { confirming = false; render(); return; }
+  if (t.dataset.choice) { if (t.getAttribute("aria-disabled") !== "true") choose(t.dataset.choice); return; }
+  if (t.dataset.go !== undefined) { goTo(+t.dataset.go); return; }
+  if (t.hasAttribute("data-finish")) { finish(); return; }
+  if (t.dataset.review !== undefined) { goTo(+t.dataset.review); return; }
+  if (t.hasAttribute("data-results")) { S.view = "results"; render(); window.scrollTo({ top: 0 }); return; }
+  if (t.hasAttribute("data-again")) { startOver(); return; }
+  if (t.hasAttribute("data-pick")) { window.scrollTo({ top: 0 }); togglePicker(true); return; }
+});
+
+document.addEventListener("change", e => {
+  if (e.target.id === "jump") goTo(+e.target.value);
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("#years").hidden) { togglePicker(false); $("#year-btn").focus(); return; }
+  if (!S || e.metaKey || e.ctrlKey || e.altKey || S.view !== "problem" || S.done) return;
+  if (e.target.tagName === "SELECT" || !$("#years").hidden) return;
+  const k = e.key.toUpperCase();
+  const idx = k.length === 1 ? (LETTERS.indexOf(k) >= 0 ? LETTERS.indexOf(k) : "12345".indexOf(k)) : -1;
+  if (idx >= 0 && !S.answers[S.cur]) { e.preventDefault(); choose(LETTERS[idx]); }
+  else if (e.key === "Enter" && S.answers[S.cur] && e.target.id !== "next-btn") { e.preventDefault(); next(); }
+});
+
+function yearFromHash() {
+  const y = +location.hash.slice(1);
+  return YEARS.includes(y) ? y : null;
+}
+window.addEventListener("hashchange", () => {
+  const y = yearFromHash();
+  if (y && y !== year) openYear(y);
+});
+
+let startYear = yearFromHash();
+if (!startYear) {
+  try { startYear = +localStorage.getItem("amc8-last-year"); } catch (e) {}
+  if (!YEARS.includes(startYear)) startYear = DEFAULT_YEAR;
+}
+openYear(startYear);
+</script>
+</body>
+</html>
